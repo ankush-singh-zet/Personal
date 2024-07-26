@@ -1,25 +1,78 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from "react";
 
-function App() {
+import { saveToLocalStorage } from "./utils/saveToLocalStorage";
+import { AOSWrapper } from "./wrapper/aosWrapper";
+import { TodoForm } from "./components/todoForm";
+import { TodoList } from "./components/todoList";
+import { Tabs } from "./components/tabs";
+import { Header } from "./components/header";
+
+const App = () => {
+  const [todos, setTodos] = useState([]);
+  const [filter, setFilter] = useState("all"); // 'all', 'completed', 'incomplete'
+
+  const addTodo = (todo) => {
+    setTodos([...todos, { ...todo, completed: false }]);
+    saveToLocalStorage([...todos, { ...todo, completed: false }]);
+  };
+
+  const removeTodo = (id) => {
+    const filteredTodos = todos.filter((todo) => todo.id !== id);
+    setTodos(filteredTodos);
+    saveToLocalStorage(filteredTodos);
+  };
+
+  const editTodo = (updatedTask) => {
+    const editedTodos = todos.map((todo) =>
+      todo.id === updatedTask.id ? updatedTask : todo
+    );
+    setTodos(editedTodos);
+    saveToLocalStorage(editedTodos);
+  };
+
+  const toggleCompletion = (id) => {
+    setTodos((prevTodos) =>
+      prevTodos.map((todo) =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      )
+    );
+  };
+
+  const filteredTasks = todos.filter((todo) => {
+    if (filter === "completed") return todo.completed;
+    if (filter === "incomplete") return !todo.completed;
+    return true;
+  });
+
+  useEffect(() => {
+    try {
+      const storedTodos = JSON.parse(localStorage.getItem("todos"));
+      if (storedTodos) {
+        setTodos(storedTodos);
+      } else {
+        setTodos([]);
+      }
+    } catch (error) {
+      console.error("Failed to load todos from local storage:", error);
+      setTodos([]);
+    }
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="container mx-auto p-4">
+      <AOSWrapper>
+        <Header />
+        <TodoForm addTodo={addTodo} />
+        <Tabs filter={filter} setFilter={setFilter} />
+        <TodoList
+          todos={filteredTasks}
+          removeTodo={removeTodo}
+          editTodo={editTodo}
+          toggleCompletion={toggleCompletion}
+        />
+      </AOSWrapper>
     </div>
   );
-}
+};
 
 export default App;
