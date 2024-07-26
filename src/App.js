@@ -30,19 +30,20 @@ const App = () => {
     saveToLocalStorage(editedTodos);
   };
 
-  const toggleCompletion = (id) => {
-    setTodos((prevTodos) =>
-      prevTodos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
-  };
-
-  const filteredTasks = todos.filter((todo) => {
+  const filteredTodos = todos.filter((todo) => {
     if (filter === "completed") return todo.completed;
     if (filter === "incomplete") return !todo.completed;
     return true;
   });
+
+  const toggleCompletion = (id) => {
+    const toggledTodo = todos.map((todo) =>
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    )
+    setTodos(toggledTodo);
+    saveToLocalStorage(toggledTodo);
+  };
+
 
   useEffect(() => {
     try {
@@ -65,7 +66,7 @@ const App = () => {
         <TodoForm addTodo={addTodo} />
         <Tabs filter={filter} setFilter={setFilter} />
         <TodoList
-          todos={filteredTasks}
+          todos={filteredTodos}
           removeTodo={removeTodo}
           editTodo={editTodo}
           toggleCompletion={toggleCompletion}
